@@ -146,19 +146,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cal-day{min-height:88px;background:var(--white);border-radius:var(--radius);padding:8px;cursor:default;transition:all 0.15s;border:2px solid transparent;}
 .cal-day.other-month{background:rgba(255,255,255,0.04);border-color:transparent;}
 .cal-day.today{border-color:var(--green);}
-.cal-day.dif-alto{background:#FCEBEB;border-color:#F7C1C1;}
-.cal-day.dif-medio{background:#FAEEDA;border-color:#FAC775;}
-.cal-day.dif-bajo{background:#E1F5EE;border-color:#9FE1CB;}
-.cal-day-num{font-size:12px;font-weight:600;margin-bottom:4px;}
+.cal-day.dif-alto{background:#E24B4A;border-color:#C03939;}
+.cal-day.dif-medio{background:#EF9F27;border-color:#CC8820;}
+.cal-day.dif-bajo{background:#1D9E75;border-color:#0F6E56;}
+.cal-day-num{font-size:12px;font-weight:700;margin-bottom:4px;}
 .cal-day.other-month .cal-day-num{color:rgba(255,255,255,0.25);}
-.cal-day:not(.other-month) .cal-day-num{color:var(--navy-dark);}
-.cal-day.dif-alto .cal-day-num{color:var(--red-dark);}
-.cal-day.dif-medio .cal-day-num{color:var(--amber-dark);}
-.cal-day.dif-bajo .cal-day-num{color:var(--green-dark);}
-.cal-match{font-size:10px;padding:3px 5px;border-radius:4px;margin-top:3px;cursor:pointer;line-height:1.3;font-weight:500;}
-.cal-day.dif-alto .cal-match{color:var(--red-dark);}
-.cal-day.dif-medio .cal-match{color:var(--amber-dark);}
-.cal-day.dif-bajo .cal-match{color:var(--green-dark);}
+.cal-day:not(.other-month):not(.dif-alto):not(.dif-medio):not(.dif-bajo) .cal-day-num{color:var(--navy-dark);}
+.cal-day.dif-alto .cal-day-num{color:#fff;}
+.cal-day.dif-medio .cal-day-num{color:#fff;}
+.cal-day.dif-bajo .cal-day-num{color:#fff;}
+.cal-match{font-size:10px;padding:3px 5px;border-radius:4px;margin-top:3px;cursor:pointer;line-height:1.3;font-weight:600;}
+.cal-day.dif-alto .cal-match{color:#fff;}
+.cal-day.dif-medio .cal-match{color:#fff;}
+.cal-day.dif-bajo .cal-match{color:#fff;}
 .cal-day:not(.dif-alto):not(.dif-medio):not(.dif-bajo) .cal-match{background:var(--navy-light);color:var(--white);}
 .dif-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .dif-btn{padding:9px;border-radius:var(--radius);border:1px solid var(--border-card);background:var(--white);font-size:12px;cursor:pointer;text-align:center;font-family:inherit;transition:all 0.12s;color:var(--navy-dark);}
@@ -462,44 +462,70 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <!-- SIMULAR -->
 <div class="page" id="page-simular">
-  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div><div class="page-title">Simular partido</div><div class="page-sub" id="simular-sub">Seleccioná un rival para cargar el análisis</div></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-sm" onclick="limpiarSimulacion()">Nueva versión</button>
-      <button class="btn btn-primary btn-sm" onclick="guardarSimulacion()">Guardar versión</button>
+  <div id="sim-lista-view">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><div class="page-title">Simular partido</div><div class="page-sub">Historial de simulaciones guardadas</div></div>
+      <button class="btn btn-primary" onclick="nuevaSimulacion()">+ Nueva simulación</button>
+    </div>
+    <div id="sim-historial-cont"><div class="loading">Sin simulaciones guardadas</div></div>
+  </div>
+  <div id="sim-form-view" style="display:none;">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><div class="page-title">Nueva simulación</div><div class="page-sub" id="simular-sub">Seleccioná un rival para cargar el análisis</div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="volverListaSim()">← Volver</button>
+        <button class="btn btn-sm" onclick="limpiarSimulacion()">Limpiar</button>
+        <button class="btn btn-primary btn-sm" onclick="guardarSimulacion()">Guardar versión</button>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label class="slabel">Rival</label>
+      <select class="form-select" id="sim-rival-sel" style="max-width:280px;" onchange="cargarContextoRival(this.value)">
+        <option value="">Seleccioná el rival...</option>
+      </select>
+    </div>
+    <div class="simular-layout">
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Necesidades del partido</div>
+          <div id="sim-necesidades" style="font-size:13px;color:#888;">Seleccioná un rival para cargar el análisis.</div>
+        </div>
+        <div class="slabel">11 titular</div>
+        <div id="sim-titulares" style="margin-bottom:8px;min-height:40px;"></div>
+        <button class="btn btn-sm" style="margin-bottom:20px;" onclick="abrirModalJugador('titular')">+ Agregar titular</button>
+        <div class="slabel">Banco</div>
+        <div id="sim-banco" style="margin-bottom:8px;min-height:40px;"></div>
+        <button class="btn btn-sm" onclick="abrirModalJugador('banco')">+ Agregar al banco</button>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Espejo de decisiones</div>
+          <div id="sim-espejo"></div>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Alertas</div>
+          <div id="sim-alertas"><div style="font-size:12px;color:#aaa;">Agregá jugadores para ver alertas.</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Contexto rival</div>
+          <div id="sim-ctx-rival"><div style="font-size:12px;color:#aaa;">Seleccioná un rival.</div></div>
+        </div>
+      </div>
     </div>
   </div>
-  <div style="margin-bottom:20px;">
-    <label class="slabel">Rival</label>
-    <select class="form-select" id="sim-rival-sel" style="max-width:280px;" onchange="cargarContextoRival(this.value)">
-      <option value="">Seleccioná el rival...</option>
-    </select>
-  </div>
-  <div class="simular-layout">
-    <div>
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Necesidades del partido</div>
-        <div id="sim-necesidades" style="font-size:13px;color:#888;">Completá el análisis del rival para ver qué perfil de jugador necesitás.</div>
-      </div>
-      <div class="slabel">11 titular <span style="font-weight:400;color:rgba(255,255,255,0.35);font-size:11px;text-transform:none;letter-spacing:0;">(tocá para agregar)</span></div>
-      <div id="sim-titulares" style="margin-bottom:8px;min-height:40px;"></div>
-      <button class="btn btn-sm" style="margin-bottom:20px;" onclick="abrirModalJugador('titular')">+ Agregar titular</button>
-      <div class="slabel">Banco</div>
-      <div id="sim-banco" style="margin-bottom:8px;min-height:40px;"></div>
-      <button class="btn btn-sm" onclick="abrirModalJugador('banco')">+ Agregar al banco</button>
+  <div id="sim-resumen-view" style="display:none;">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><div class="page-title" id="sim-resumen-title">Resumen simulación</div><div class="page-sub" id="sim-resumen-sub"></div></div>
+      <button class="btn" onclick="volverListaSim()">← Volver</button>
     </div>
-    <div>
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Espejo de decisiones</div>
-        <div id="sim-espejo"></div>
+    <div class="grid-2" style="gap:20px;">
+      <div>
+        <div class="card" style="margin-bottom:16px;"><div class="card-title">11 titular</div><div id="sim-res-titulares"></div></div>
+        <div class="card"><div class="card-title">Banco</div><div id="sim-res-banco"></div></div>
       </div>
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Alertas</div>
-        <div id="sim-alertas"><div style="font-size:12px;color:#aaa;">Agregá jugadores para ver alertas.</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Contexto rival</div>
-        <div id="sim-ctx-rival"><div style="font-size:12px;color:#aaa;">Seleccioná un rival.</div></div>
+      <div>
+        <div class="card" style="margin-bottom:16px;"><div class="card-title">Espejo de decisiones</div><div id="sim-res-espejo"></div></div>
+        <div class="card"><div class="card-title">Contexto rival</div><div id="sim-res-ctx"></div></div>
       </div>
     </div>
   </div>
@@ -860,7 +886,10 @@ function renderCalendario(){
     const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday=d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
     const matching=partidos.filter(p=>p.fecha===dateStr);
-    const dif=matching.length>0?(matching[0].dificultad||'sin'):'';
+    let dif='';
+    if(matching.length>0){
+      dif=matching[0].dificultad&&matching[0].dificultad!=='sin'?matching[0].dificultad:getDifAutomatica(matching[0].rival);
+    }
     const cell=document.createElement('div');
     cell.className='cal-day'+(isToday?' today':'')+(dif&&dif!=='sin'?' dif-'+dif:'');
     cell.innerHTML=`<div class="cal-day-num">${d}</div>`;
@@ -881,10 +910,19 @@ function openModalPartido(idx){
   document.getElementById('mp-fecha').value=p.fecha;
   document.getElementById('mp-hora').value=p.hora||'15:00';
   document.getElementById('mp-condicion').value=p.condicion;
-  currentDif=p.dificultad||'sin';
+  currentDif=p.dificultad&&p.dificultad!=='sin'?p.dificultad:getDifAutomatica(p.rival);
   document.querySelectorAll('.dif-btn').forEach(b=>b.classList.remove('sel-alto','sel-medio','sel-bajo'));
   if(currentDif!=='sin')document.querySelector(`.dif-btn[onclick*="${currentDif}"]`)?.classList.add('sel-'+currentDif);
   document.getElementById('modal-partido').classList.add('open');
+}
+function getDifAutomatica(rival){
+  const TIGRE_POS=22;
+  const rivalData=TABLA_LPF.find(t=>t.equipo===rival||rival.includes(t.equipo.split(' ')[0])||t.equipo.includes(rival.split(' ')[0]));
+  if(!rivalData)return'sin';
+  const diff=TIGRE_POS-rivalData.pos;
+  if(diff>4)return'alto'; // rival mucho mejor
+  if(diff>=-2&&diff<=4)return'medio'; // similar
+  return'bajo'; // Tigre mejor
 }
 function selDif(dif,btn){currentDif=dif;document.querySelectorAll('.dif-btn').forEach(b=>b.classList.remove('sel-alto','sel-medio','sel-bajo'));btn.classList.add('sel-'+dif);}
 async function guardarPartido(){
@@ -894,7 +932,8 @@ async function guardarPartido(){
   p.hora=document.getElementById('mp-hora').value;
   p.condicion=document.getElementById('mp-condicion').value;
   p.dificultad=currentDif;
-  await sb.from('partidos').update({fecha:p.fecha,hora:p.hora,condicion:p.condicion,dificultad:p.dificultad}).eq('id',p.id);
+  const {error}=await sb.from('partidos').update({fecha:p.fecha,hora:p.hora,condicion:p.condicion,dificultad:p.dificultad}).eq('id',p.id);
+  if(error){toast('Error al guardar');return;}
   closeModal('modal-partido');renderCalendario();renderDashboard();toast('Partido actualizado');
 }
 
@@ -1100,9 +1139,15 @@ async function guardarSesionDia(){
   const estado=estadoMap[sesionDiaEstado]||'Normal';
   const destacados=Object.entries(sesionDiaDestacados).map(([nombre,d])=>({nombre,tipo:d.tipo,obs:document.getElementById('obs-'+nombre.replace(/\s/g,'_'))?.value||d.obs||''}));
   const nota=document.getElementById('sesion-nota-general').value;
-  const payload={fecha:diaEditando,dia_semana:'',estado,destacados,nota};
-  const {error}=await sb.from('sesiones').upsert(payload,{onConflict:'fecha'});
-  if(error){toast('Error al guardar');return;}
+  // Verificar si ya existe sesion para ese dia
+  const existente=sesiones.find(s=>s.fecha===diaEditando);
+  let error;
+  if(existente){
+    ({error}=await sb.from('sesiones').update({estado,destacados,nota}).eq('id',existente.id));
+  } else {
+    ({error}=await sb.from('sesiones').insert({fecha:diaEditando,estado,destacados,nota}));
+  }
+  if(error){console.error(error);toast('Error al guardar: '+error.message);return;}
   await cargarSesiones();
   closeSesionDia();renderDiaADia();toast('Sesión guardada');
 }
@@ -1203,28 +1248,83 @@ function irSimularConRival(){
 
 // ===== SIMULAR =====
 function renderSimular(){
-  renderSimTitulares();renderSimBanco();renderSimEspejo();renderSimAlertas();
+  document.getElementById('sim-lista-view').style.display='block';
+  document.getElementById('sim-form-view').style.display='none';
+  document.getElementById('sim-resumen-view').style.display='none';
+  cargarSimulaciones();
+}
+async function cargarSimulaciones(){
+  const {data}=await sb.from('simulaciones').select('*').order('created_at',{ascending:false});
+  simulaciones=data||[];
+  const cont=document.getElementById('sim-historial-cont');
+  if(!simulaciones.length){cont.innerHTML='<div class="loading">Sin simulaciones — tocá "Nueva simulación" para empezar</div>';return;}
+  cont.innerHTML=simulaciones.map(s=>`<div class="historial-item" onclick="verResumenSim('${s.id}')"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="historial-rival">${s.rival||'Sin rival'}</div><div class="historial-fecha">${new Date(s.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})} · ${(s.titulares||[]).length} titulares · ${(s.banco||[]).length} en banco</div></div><span style="font-size:13px;color:#aaa;">Ver →</span></div></div>`).join('');
+}
+function nuevaSimulacion(){
+  limpiarSimulacion();
+  document.getElementById('sim-lista-view').style.display='none';
+  document.getElementById('sim-form-view').style.display='block';
+  document.getElementById('sim-resumen-view').style.display='none';
+}
+function volverListaSim(){
+  document.getElementById('sim-lista-view').style.display='block';
+  document.getElementById('sim-form-view').style.display='none';
+  document.getElementById('sim-resumen-view').style.display='none';
+  cargarSimulaciones();
+}
+function verResumenSim(id){
+  const s=simulaciones.find(x=>x.id===id);if(!s)return;
+  document.getElementById('sim-lista-view').style.display='none';
+  document.getElementById('sim-form-view').style.display='none';
+  document.getElementById('sim-resumen-view').style.display='block';
+  document.getElementById('sim-resumen-title').textContent='Simulación — '+(s.rival||'Sin rival');
+  document.getElementById('sim-resumen-sub').textContent=new Date(s.created_at).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const renderLista=(contId,lista)=>{
+    document.getElementById(contId).innerHTML=(lista||[]).map(e=>{
+      const n=JUGADORES[e.idx]||'Desconocido';const c=avColor(e.idx||0);const f=fichas[n]||{};
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:${c.bg};color:${c.tx};">${initials(n)}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;">${n}</div><div style="font-size:11px;color:#888;">${f.posicion||''}${(f.cualidades||[]).length?' · '+(f.cualidades||[]).slice(0,2).join(', '):''}</div></div><span class="motivo-pill ${motivoClases[e.motivo]||''}">${motivoLabels[e.motivo]||e.motivo}</span></div>`;
+    }).join('')||'<div style="font-size:12px;color:#aaa;">Sin datos</div>';
+  };
+  renderLista('sim-res-titulares',s.titulares);
+  renderLista('sim-res-banco',s.banco);
+  const mc=s.motivo_counts||{};const total=Math.max(1,Object.values(mc).reduce((a,b)=>a+b,0));
+  const colors={partido:'#1D9E75',semana:'#639922',ant:'#378ADD',rotacion:'#EF9F27',complemento:'#7F77DD',confianza:'#E24B4A'};
+  document.getElementById('sim-res-espejo').innerHTML=Object.entries(motivoLabels).map(([key,label])=>{const v=mc[key]||0;const pct=Math.round((v/total)*100);return `<div class="espejo-bar"><div class="espejo-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[key]};"></div></div><div class="espejo-val">${v}</div></div>`;}).join('');
+  const rivalStats=TABLA_LPF.find(t=>t.equipo===s.rival||s.rival?.includes(t.equipo.split(' ')[0]));
+  document.getElementById('sim-res-ctx').innerHTML=rivalStats?`<div style="font-size:13px;display:flex;flex-direction:column;gap:4px;"><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Posición</span><strong>${rivalStats.pos}°</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Rendimiento</span><strong>${rivalStats.g}G ${rivalStats.e}E ${rivalStats.p}P</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#888;">Goles</span><strong>${rivalStats.gf}F · ${rivalStats.gc}C</strong></div></div>`:'<div style="font-size:12px;color:#aaa;">Sin datos del rival</div>';
+}
+function irSimularConRival(){
+  const rival=window._rivalNombre||'';
+  goTo('simular');
+  setTimeout(()=>{
+    nuevaSimulacion();
+    document.getElementById('sim-rival-sel').value=rival;
+    cargarContextoRival(rival);
+  },100);
 }
 function cargarContextoRival(rival){
   simRival=rival;
+  if(!rival)return;
+  const rivalStats=TABLA_LPF.find(t=>t.equipo===rival||rival.includes(t.equipo.split(' ')[0])||t.equipo.includes(rival.split(' ')[0]));
   const ctxCont=document.getElementById('sim-ctx-rival');
-  const necesCont=document.getElementById('sim-necesidades');
-  if(!rival){ctxCont.innerHTML='<div style="font-size:12px;color:#aaa;">Seleccioná un rival.</div>';return;}
-  const rivalStats=TABLA_LPF.find(t=>t.equipo===rival||rival.includes(t.equipo.split(' ')[0]));
+  if(rivalStats&&ctxCont){ctxCont.innerHTML=`<div style="font-size:13px;color:var(--navy-dark);display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Posición</span><strong>${rivalStats.pos}°</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Rendimiento</span><strong>${rivalStats.g}G ${rivalStats.e}E ${rivalStats.p}P</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#888;">Goles</span><strong>${rivalStats.gf}F · ${rivalStats.gc}C</strong></div></div>`;}
   const analisis=analisisRivales.find(a=>a.rival===rival);
-  if(rivalStats){ctxCont.innerHTML=`<div style="font-size:13px;color:var(--navy-dark);display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Posición</span><strong>${rivalStats.pos}°</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Rendimiento</span><strong>${rivalStats.g}G ${rivalStats.e}E ${rivalStats.p}P</strong></div><div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#888;">Goles</span><strong>${rivalStats.gf}F · ${rivalStats.gc}C</strong></div></div>`;}
-  if(analisis&&analisis.resumen){
+  const necesCont=document.getElementById('sim-necesidades');
+  if(analisis&&analisis.resumen&&necesCont){
     const res=analisis.resumen;const items=[];
-    if(res['Fortaleza'])items.push('Fortaleza: '+res['Fortaleza'].map(i=>i.item).slice(0,2).join(', '));
-    if(res['Déficit'])items.push('Déficit: '+res['Déficit'].map(i=>i.item).slice(0,2).join(', '));
+    if(res['Fortaleza'])items.push('⚠️ Fortaleza rival: '+res['Fortaleza'].map(i=>i.item).slice(0,2).join(', '));
+    if(res['Déficit'])items.push('✓ Déficit rival: '+res['Déficit'].map(i=>i.item).slice(0,2).join(', '));
     if(res['Bloque defensivo'])items.push('Bloque: '+res['Bloque defensivo'].map(i=>i.item).join(', '));
-    necesCont.innerHTML=items.map(i=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);">${i}</div>`).join('')||'<div style="font-size:12px;color:rgba(255,255,255,0.4);">Cargá el análisis del rival para ver necesidades.</div>';
+    if(res['Construcción'])items.push('Construcción: '+res['Construcción'].map(i=>i.item).join(', '));
+    necesCont.innerHTML=items.length?items.map(i=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);">${i}</div>`).join(''):'<div style="font-size:12px;color:rgba(255,255,255,0.4);">Análisis encontrado pero sin datos.</div>';
+  } else if(necesCont){
+    necesCont.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.4);">Sin análisis guardado para este rival.</div>';
   }
 }
 function abrirModalJugador(tipo){
   window._simTipo=tipo;
   const sel=document.getElementById('maj-jugador');
-  sel.innerHTML=JUGADORES.map((n,i)=>`<option value="${i}">${n}${fichas[n]?.posicion?' — '+fichas[n].posicion:''}</option>`).join('');
+  sel.innerHTML=JUGADORES.map((n,i)=>{const f=fichas[n]||{};const cual=(f.cualidades||[]).slice(0,3).join(', ');return `<option value="${i}">${n}${f.posicion?' — '+f.posicion:''}${cual?' ('+cual+')':''}`;}).join('');
   document.getElementById('modal-agregar-jugador').classList.add('open');
 }
 function confirmarJugador(){
@@ -1239,18 +1339,20 @@ function confirmarJugador(){
 const motivoLabels={partido:'Perfil partido',semana:'Semana',ant:'Partido ant.',rotacion:'Rotación',complemento:'Complemento',confianza:'Confianza'};
 const motivoClases={partido:'motivo-partido',semana:'motivo-semana',ant:'motivo-ant',rotacion:'motivo-rotacion',complemento:'motivo-complemento',confianza:'motivo-confianza'};
 function renderSimTitulares(){
-  const cont=document.getElementById('sim-titulares');cont.innerHTML='';
+  const cont=document.getElementById('sim-titulares');if(!cont)return;cont.innerHTML='';
   simTitulares.forEach((e,i)=>{
-    const n=JUGADORES[e.idx];const c=avColor(e.idx);const row=document.createElement('div');row.className='simular-player-row titular';
-    row.innerHTML=`<div class="avatar" style="width:28px;height:28px;font-size:10px;background:${c.bg};color:${c.tx};">${initials(n)}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--navy-dark);">${n}</div><div style="font-size:11px;color:#888;">${fichas[n]?.posicion||''}</div></div><span class="motivo-pill ${motivoClases[e.motivo]}">${motivoLabels[e.motivo]}</span><button onclick="quitarSim('titular',${i})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 4px;line-height:1;">×</button>`;
+    const n=JUGADORES[e.idx];const c=avColor(e.idx);const f=fichas[n]||{};
+    const row=document.createElement('div');row.className='simular-player-row titular';
+    row.innerHTML=`<div class="avatar" style="width:28px;height:28px;font-size:10px;background:${c.bg};color:${c.tx};">${initials(n)}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--navy-dark);">${n}</div><div style="font-size:11px;color:#888;">${f.posicion||''}${(f.cualidades||[]).length?' · '+(f.cualidades||[]).slice(0,2).join(', '):''}</div></div><span class="motivo-pill ${motivoClases[e.motivo]}">${motivoLabels[e.motivo]}</span><button onclick="quitarSim('titular',${i})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 4px;line-height:1;">×</button>`;
     cont.appendChild(row);
   });
 }
 function renderSimBanco(){
-  const cont=document.getElementById('sim-banco');cont.innerHTML='';
+  const cont=document.getElementById('sim-banco');if(!cont)return;cont.innerHTML='';
   simBanco.forEach((e,i)=>{
-    const n=JUGADORES[e.idx];const c=avColor(e.idx);const row=document.createElement('div');row.className='simular-player-row banco';
-    row.innerHTML=`<div class="avatar" style="width:28px;height:28px;font-size:10px;background:${c.bg};color:${c.tx};">${initials(n)}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--navy-dark);">${n}</div><div style="font-size:11px;color:#888;">${fichas[n]?.posicion||''}</div></div><span class="motivo-pill ${motivoClases[e.motivo]}">${motivoLabels[e.motivo]}</span><button onclick="quitarSim('banco',${i})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 4px;line-height:1;">×</button>`;
+    const n=JUGADORES[e.idx];const c=avColor(e.idx);const f=fichas[n]||{};
+    const row=document.createElement('div');row.className='simular-player-row banco';
+    row.innerHTML=`<div class="avatar" style="width:28px;height:28px;font-size:10px;background:${c.bg};color:${c.tx};">${initials(n)}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--navy-dark);">${n}</div><div style="font-size:11px;color:#888;">${f.posicion||''}${(f.cualidades||[]).length?' · '+(f.cualidades||[]).slice(0,2).join(', '):''}</div></div><span class="motivo-pill ${motivoClases[e.motivo]}">${motivoLabels[e.motivo]}</span><button onclick="quitarSim('banco',${i})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 4px;line-height:1;">×</button>`;
     cont.appendChild(row);
   });
 }
@@ -1260,7 +1362,7 @@ function quitarSim(tipo,i){
   renderSimTitulares();renderSimBanco();renderSimEspejo();renderSimAlertas();
 }
 function renderSimEspejo(){
-  const cont=document.getElementById('sim-espejo');cont.innerHTML='';
+  const cont=document.getElementById('sim-espejo');if(!cont)return;cont.innerHTML='';
   const total=Math.max(1,Object.values(motivoCounts).reduce((a,b)=>a+b,0));
   const colors={partido:'#1D9E75',semana:'#639922',ant:'#378ADD',rotacion:'#EF9F27',complemento:'#7F77DD',confianza:'#E24B4A'};
   Object.entries(motivoLabels).forEach(([key,label])=>{
@@ -1272,16 +1374,16 @@ function renderSimEspejo(){
   const tot=simTitulares.length+simBanco.length;
   if(tot>2&&(motivoCounts.confianza/tot)>=0.4){
     const a=document.createElement('div');a.className='alert alert-amber';a.style.marginTop='10px';
-    a.innerHTML='<div class="alert-label">Sesgo detectado</div><div class="alert-text">Más del 40% de tus elecciones son por confianza. ¿Estás teniendo en cuenta el perfil del partido?</div>';
+    a.innerHTML='<div class="alert-label">Sesgo detectado</div><div class="alert-text">Más del 40% de tus elecciones son por confianza.</div>';
     cont.appendChild(a);
   }
 }
 function renderSimAlertas(){
-  const cont=document.getElementById('sim-alertas');cont.innerHTML='';
+  const cont=document.getElementById('sim-alertas');if(!cont)return;cont.innerHTML='';
   if(simTitulares.length+simBanco.length===0){cont.innerHTML='<div style="font-size:12px;color:#aaa;">Agregá jugadores para ver alertas.</div>';return;}
   let hay=false;
   simTitulares.forEach(e=>{
-    if(e.motivo==='confianza'){const n=JUGADORES[e.idx];const a=document.createElement('div');a.className='alert alert-amber';a.innerHTML=`<div class="alert-label">Atención</div><div class="alert-text">${n} está por confianza. ¿Tiene el perfil que necesitás para este partido?</div>`;cont.appendChild(a);hay=true;}
+    if(e.motivo==='confianza'){const n=JUGADORES[e.idx];const a=document.createElement('div');a.className='alert alert-amber';a.innerHTML=`<div class="alert-label">Atención</div><div class="alert-text">${n} está por confianza. ¿Tiene el perfil que necesitás?</div>`;cont.appendChild(a);hay=true;}
   });
   if(!hay)cont.innerHTML='<div class="alert alert-green"><div class="alert-label">Sin alertas</div><div class="alert-text">Todo en orden por ahora.</div></div>';
 }
@@ -1289,8 +1391,10 @@ async function guardarSimulacion(){
   if(!simRival){toast('Seleccioná un rival');return;}
   const payload={rival:simRival,titulares:simTitulares,banco:simBanco,motivo_counts:motivoCounts};
   const {error}=await sb.from('simulaciones').insert(payload);
-  if(error){toast('Error al guardar');return;}
+  if(error){toast('Error: '+error.message);return;}
   toast('Simulación guardada');
+  limpiarSimulacion();
+  volverListaSim();
 }
 function limpiarSimulacion(){
   simTitulares=[];simBanco=[];Object.keys(motivoCounts).forEach(k=>motivoCounts[k]=0);
